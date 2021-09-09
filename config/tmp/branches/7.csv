@@ -1,0 +1,10 @@
+org.apache.commons.cli2.builder.PatternBuilder,jump,76,77
+org.apache.commons.cli2.builder.PatternBuilder,jump,81,82
+org.apache.commons.cli2.builder.PatternBuilder,jump,105,106
+org.apache.commons.cli2.builder.PatternBuilder,jump,108,109
+org.apache.commons.cli2.builder.PatternBuilder,jump,111,112
+org.apache.commons.cli2.builder.PatternBuilder,jump,140,141
+org.apache.commons.cli2.builder.PatternBuilder,switch,145,156,159
+org.apache.commons.cli2.builder.PatternBuilder,jump,159,160
+org.apache.commons.cli2.builder.PatternBuilder,jump,169,170
+org.apache.commons.cli2.builder.PatternBuilder,switch,177,181,185,187,189,195,197,199
