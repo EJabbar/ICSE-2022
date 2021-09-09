@@ -2,9 +2,10 @@ import subprocess
 from sys import version
 from tqdm import tqdm
 from random import choice
-from parse import get_covered_lines
+from parse import get_covered_lines, get_covered_lines_cv
 
-class LC:
+
+class CV:
     def __init__(self, config, pname, version):
         self.config = config
         self.pname = pname
@@ -18,7 +19,7 @@ class LC:
         with open(pth, 'r') as f:
             tests = f.read().splitlines()
             size = len(tests)
-            tests = list(map(LC.reformat_testcase, tests))
+            tests = list(map(CV.reformat_testcase, tests))
         
         pth = './failing_tests/failing_{}_{}.txt'.format(self.pname, self.version)
         with open(pth, 'r') as f:
@@ -29,15 +30,6 @@ class LC:
             failing_ids.append(fid)
         
         return size, failing_ids
-
-    def exec(self):
-        self.clone()
-        self.load_relevant_tests()
-        self.load_failing_tests() 
-        self.num_of_test, self.failing_test_ids = self.get_version_info()
-        self.generate_coverage_files() 
-        self.rank_relevant_tests()
-        ...
 
     def clone(self):
         print('cloning the project... ', end = '')
@@ -64,6 +56,30 @@ class LC:
         for ti, t in tqdm(enumerate(tests), total=len(tests)):
             rc = subprocess.run("bash ./get_coverage.sh {} {} {} {}".format(self.version, ti, t, self.pname), shell=True, stdout=subprocess.DEVNULL, stderr=subprocess.STDOUT)
 
+    def exec(self):
+        self.clone()
+        self.load_relevant_tests()
+        self.load_failing_tests() 
+        self.num_of_test, self.failing_test_ids = self.get_version_info()
+        self.generate_coverage_files() 
+
+    @staticmethod
+    def reformat_testcase(tst):
+        tmp = tst.split('(')
+        name = tmp[0]
+        tmp = tmp[1].split(')')
+        path = tmp[0]
+        return path+'::'+name
+
+
+class LC(CV):
+    def __init__(self, config, pname, version):
+        super().__init__(config, pname, version)
+
+
+    def exec(self):
+        super().exec()
+        self.rank_relevant_tests()
 
     def rank_relevant_tests(self, save_file=True):
         test_covered = {}
@@ -131,15 +147,104 @@ class LC:
         return rank, frl
         
 
-    @staticmethod
-    def reformat_testcase(tst):
-        tmp = tst.split('(')
-        name = tmp[0]
-        tmp = tmp[1].split(')')
-        path = tmp[0]
-        return path+'::'+name
+class BC(CV):
+    def __init__(self, config, pname, version):
+        super().__init__(config, pname, version)
 
 
-class BC:
-    def __init__(self) -> None:
-        pass
+    def exec(self):
+        super().exec()
+        self.rank_relevant_tests()
+
+    def rank_relevant_tests():
+        types = []
+        covered_branches = []
+        lines_of_branches = []
+        classes = []
+
+        def get_branches():
+            with open('./branches/{}.csv'.format(version), 'r') as brchcsv:
+                csv_reader = reader(brchcsv)
+                for row in csv_reader:
+                    covered_branches.append([False]*(len(row)-2))
+                    types.append(row[1])
+                    classes.append(row[0])
+                    lines_of_branches.append([int(i) for i in row[2:]])
+
+        get_branches()
+
+        def get_score_of_test(tstcvrdlines):
+            score = 0
+            for i in range(len(lines_of_branches)):
+                clsname = classes[i]
+                lines = lines_of_branches[i]
+                tp = types[i]
+                if tp == 'jump':
+                    h_cnd = tstcvrdlines[clsname][lines[0]]
+                    h_nxt = tstcvrdlines[clsname][lines[1]]
+                    brnch_false = (h_cnd-h_nxt) > 0
+                    brnch_true = h_nxt > 0
+                    if brnch_false and covered_branches[i][0] == False:
+                        score = score + 1
+                    if brnch_true and covered_branches[i][1] == False:
+                        score = score + 1
+                elif tp == 'switch':
+                    for j, lbr in enumerate(lines):
+                        if tstcvrdlines[clsname][lbr] > 0 and covered_branches[i][j] == False:
+                            score == score + 1
+            return score
+
+        test_covered = {}
+        for i in range(self.):
+            file_path = './coverage_results/coverage_{}_{}.xml'.format(version, i)
+            cl = get_covered_lines(file_path)
+            test_covered[i] = cl
+
+        rank = []
+        remained_tests = list(range(num_of_test))
+
+        def rank_remained_tests():
+            id_score = {}
+            for tst in remained_tests:
+                score = get_score_of_test(test_covered[tst])
+                id_score[tst] = score
+            return id_score
+
+        def add_test_to_covered_branches(tstcvrdlines):
+            for i in range(len(lines_of_branches)):
+                clsname = classes[i]
+                lines = lines_of_branches[i]
+                tp = types[i]
+                if tp == 'jump':
+                    h_cnd = tstcvrdlines[clsname][lines[0]]
+                    h_nxt = tstcvrdlines[clsname][lines[1]]
+                    brnch_false = (h_cnd-h_nxt) > 0
+                    brnch_true = h_nxt > 0
+                    if brnch_false:
+                        covered_branches[i][0] = True
+                    if brnch_true:
+                        covered_branches[i][1] = True
+                elif tp == 'switch':
+                    for j, lbr in enumerate(lines):
+                        if tstcvrdlines[clsname][lbr] > 0:
+                            covered_branches[i][j] = True
+
+        while len(remained_tests) > 0:
+            id_score = rank_remained_tests()
+            
+            vls = id_score.values()
+            mx_vl = max(vls)
+            mx_ks = [k for k, v in id_score.items() if v == mx_vl]
+            nid = choice(mx_ks)
+            add_test_to_covered_branches(test_covered[nid])
+            rank.append(nid)
+            remained_tests.remove(nid)
+
+        #print('----------------version: {} ---------------------'.format(version))
+        #print('num of tests: ', num_of_test)
+        frl = []
+        for ft in failing_tests:
+            frl.append(rank.index(ft)+1)
+
+        version_results.append(min(frl))
+        ...
