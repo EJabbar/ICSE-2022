@@ -1,6 +1,6 @@
 import argparse
 import configparser
-from CV_TP import LC
+from CV_TP import LC, BC
 
 parser = argparse.ArgumentParser(description='Testcase prioritization.')
 
@@ -26,6 +26,8 @@ if tech == 'LC':
 
 elif tech == 'BC':
     print('start BC-based TP for (p:{} v:{}) ...'.format(pname, version))
+    bc = BC(config, pname, version)
+    bc.exec()
 
 elif tech == 'ONE-HOT':
     print('start ONE-HOT-based TP for (p:{} v:{}) ...'.format(pname, version))

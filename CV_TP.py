@@ -3,6 +3,8 @@ from sys import version
 from tqdm import tqdm
 from random import choice
 from parse import get_covered_lines, get_covered_lines_cv
+from csv import reader
+
 
 
 class CV:
@@ -135,7 +137,7 @@ class LC(CV):
             frl.append(rank.index(ft)+1)
 
         if save_file:
-            with open(self.config['DEFAULT']['OutPath']+'{}_{}.txt'.format(self.pname, self.version), 'w') as f:
+            with open(self.config['DEFAULT']['OutPath']+'LC_{}_{}.txt'.format(self.pname, self.version), 'w') as f:
                 f.write('ranks:\n')
                 f.write(str(rank))
                 f.write('\n')
@@ -156,14 +158,14 @@ class BC(CV):
         super().exec()
         self.rank_relevant_tests()
 
-    def rank_relevant_tests():
+    def rank_relevant_tests(self, save_file=True):
         types = []
         covered_branches = []
         lines_of_branches = []
         classes = []
 
         def get_branches():
-            with open('./branches/{}.csv'.format(version), 'r') as brchcsv:
+            with open('./branches/{}/{}.csv'.format(self.pname, self.version), 'r') as brchcsv:
                 csv_reader = reader(brchcsv)
                 for row in csv_reader:
                     covered_branches.append([False]*(len(row)-2))
@@ -195,13 +197,13 @@ class BC(CV):
             return score
 
         test_covered = {}
-        for i in range(self.):
-            file_path = './coverage_results/coverage_{}_{}.xml'.format(version, i)
-            cl = get_covered_lines(file_path)
+        for i in range(self.num_of_test):
+            file_path = './coverage_files/coverage_{}_{}_{}.xml'.format(self.pname, self.version, i)
+            cl = get_covered_lines_cv(file_path)
             test_covered[i] = cl
 
         rank = []
-        remained_tests = list(range(num_of_test))
+        remained_tests = list(range(self.num_of_test))
 
         def rank_remained_tests():
             id_score = {}
@@ -240,11 +242,18 @@ class BC(CV):
             rank.append(nid)
             remained_tests.remove(nid)
 
-        #print('----------------version: {} ---------------------'.format(version))
-        #print('num of tests: ', num_of_test)
         frl = []
-        for ft in failing_tests:
+        for ft in self.failing_test_ids:
             frl.append(rank.index(ft)+1)
 
-        version_results.append(min(frl))
-        ...
+        if save_file:
+            with open(self.config['DEFAULT']['OutPath']+'BC_{}_{}.txt'.format(self.pname, self.version), 'w') as f:
+                f.write('ranks:\n')
+                f.write(str(rank))
+                f.write('\n')
+                f.write('failing ranks:')
+                f.write('\n')
+                f.write(str(frl))
+                f.close()
+
+        return rank, frl
