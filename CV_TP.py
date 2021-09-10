@@ -7,7 +7,7 @@ from csv import reader
 
 
 
-class CV:
+class TP:
     def __init__(self, config, pname, version):
         self.config = config
         self.pname = pname
@@ -74,7 +74,7 @@ class CV:
         return path+'::'+name
 
 
-class LC(CV):
+class LC(TP):
     def __init__(self, config, pname, version):
         super().__init__(config, pname, version)
 
@@ -149,7 +149,7 @@ class LC(CV):
         return rank, frl
         
 
-class BC(CV):
+class BC(TP):
     def __init__(self, config, pname, version):
         super().__init__(config, pname, version)
 
