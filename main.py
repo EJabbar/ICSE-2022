@@ -8,10 +8,10 @@ from one_hot import OneHotModel, AMD
 
 parser = argparse.ArgumentParser(description='Testcase prioritization.')
 
-parser.add_argument('--technique', help='TP technique to be used')
-parser.add_argument('--config', help='config file for selected technique')
-parser.add_argument('--pname', help='project name')
-parser.add_argument('--version', help='version of project')
+parser.add_argument('-t', '--technique', help='TP technique to be used')
+parser.add_argument('-c', '--config', help='config file for selected technique')
+parser.add_argument('-p', '--pname', help='project name')
+parser.add_argument('-v', '--version', help='version of project')
 
 args = vars(parser.parse_args())
 
