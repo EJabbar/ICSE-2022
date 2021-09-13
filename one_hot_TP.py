@@ -1,5 +1,4 @@
 import numpy as np
-import pandas as pd
 from CV_TP import TP
 from parse import get_covered_lines
 from one_hot import OneHotModel, AMD
@@ -126,7 +125,7 @@ class OneHot(TP):
         failing_ranks = list(map(find_rank, self.failing_test_ids))
 
         if save_file:
-            with open(self.config['DEFAULT']['OutPath']+'LC_{}_{}.txt'.format(self.pname, self.version), 'w') as f:
+            with open(self.config['DEFAULT']['OutPath']+'ONEHOT_{}_{}.txt'.format(self.pname, self.version), 'w') as f:
                 f.write('ranks:\n')
                 f.write(str(rank))
                 f.write('\n')
