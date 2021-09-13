@@ -1,6 +1,10 @@
 import argparse
 import configparser
+
+from numpy import mod
 from CV_TP import LC, BC
+from one_hot_TP import OneHot
+from one_hot import OneHotModel, AMD
 
 parser = argparse.ArgumentParser(description='Testcase prioritization.')
 
@@ -31,6 +35,10 @@ elif tech == 'BC':
 
 elif tech == 'ONE-HOT':
     print('start ONE-HOT-based TP for (p:{} v:{}) ...'.format(pname, version))
+    model = OneHotModel()
+    num_neigbours = int(config['DEFAULT']['NumNeighbours'])
+    score_calculator = AMD(num_neigbours)
+    ohm = OneHot(config, pname, version, model, score_calculator)
 
 else:
     raise ValueError('invalid technique selected')
