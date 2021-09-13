@@ -21,7 +21,7 @@ class TP:
         with open(pth, 'r') as f:
             tests = f.read().splitlines()
             size = len(tests)
-            tests = list(map(CV.reformat_testcase, tests))
+            tests = list(map(TP.reformat_testcase, tests))
         
         pth = './failing_tests/failing_{}_{}.txt'.format(self.pname, self.version)
         with open(pth, 'r') as f:
@@ -54,7 +54,7 @@ class TP:
         tests = []
         with open(rel_file_path, 'r') as rf:
             tests = rf.read().splitlines()
-        tests = list(map(LC.reformat_testcase, tests))
+        tests = list(map(TP.reformat_testcase, tests))
         for ti, t in tqdm(enumerate(tests), total=len(tests)):
             rc = subprocess.run("bash ./get_coverage.sh {} {} {} {}".format(self.version, ti, t, self.pname), shell=True, stdout=subprocess.DEVNULL, stderr=subprocess.STDOUT)
 
@@ -64,6 +64,7 @@ class TP:
         self.load_failing_tests() 
         self.num_of_test, self.failing_test_ids = self.get_version_info()
         self.generate_coverage_files() 
+        return None, None
 
     @staticmethod
     def reformat_testcase(tst):
@@ -81,7 +82,7 @@ class LC(TP):
 
     def exec(self):
         super().exec()
-        self.rank_relevant_tests()
+        return self.rank_relevant_tests()
 
     def rank_relevant_tests(self, save_file=True):
         test_covered = {}
@@ -156,7 +157,7 @@ class BC(TP):
 
     def exec(self):
         super().exec()
-        self.rank_relevant_tests()
+        return self.rank_relevant_tests()
 
     def rank_relevant_tests(self, save_file=True):
         types = []
