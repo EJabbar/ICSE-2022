@@ -1,13 +1,13 @@
 import numpy as np
 from CV_TP import TP
 from parse import get_covered_lines
-from one_hot import OneHotModel, AMD
 
 class OneHot(TP):
     
-    def __init__(self, config, pname, version, one_hot_model):
+    def __init__(self, config, pname, version, one_hot_model, score_calculator):
         super().__init__(config, pname, version)
         self.one_hot_model = one_hot_model
+        self.score_calculator = score_calculator
 
 
     def exec(self):
@@ -73,16 +73,15 @@ class OneHot(TP):
         rankd_rel_traces = sorted(rankd_rel_traces, key=lambda x: x[4], reverse=True)
 
 
-        embeddin_model = OneHotModel()
         model_all_traces = []
         for rt in rankd_rel_traces:
             model_all_traces.append(rt[3])
 
-        embeddin_model.fit(model_all_traces)
+        self.one_hot_model.fit(model_all_traces)
 
         rnkd_rel_traces_embd = []
         for rt in rankd_rel_traces:
-            embd = embeddin_model.generate_embedding(rt[3])
+            embd = self.one_hot_model.generate_embedding(rt[3])
             tmp = rt
             tmp.append(embd)
             rnkd_rel_traces_embd.append(tmp)
@@ -98,12 +97,11 @@ class OneHot(TP):
         vcs = []
         vcs.append(frank[5])
 
-        amd = AMD()
         def calculate_distance_from_NNs(e):
             new_test_case_vec = np.array(e).reshape(1, -1)
             test_suite_vecs = np.array(vcs)
-            amd_score = amd.calculate_score(test_suite_vecs, new_test_case_vec)
-            return amd_score
+            ds_score = self.score_calculator.calculate_score(test_suite_vecs, new_test_case_vec)
+            return ds_score
 
         while len(rnkd_rel_traces_embd) > 0:
             for r in rnkd_rel_traces_embd:
